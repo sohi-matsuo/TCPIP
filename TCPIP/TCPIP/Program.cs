@@ -42,26 +42,28 @@ class Program
         //文字列(string型)はUnicodeでは送信することができないのでbyte型として変更する
         System.Text.Encoding nc = System.Text.Encoding.UTF8;
 
-        bool inputrun = true;
-        bool run = true;
+       
 
         //データの長さが分からない時に少しづつデータを溜め込む”MemoryStream”を使う
         //メモリ領域は必要に応じて拡張される
         System.IO.MemoryStream ms = new System.IO.MemoryStream();
 
-        int c;
-        string str = "end";
+        bool inputrun = true;
+        bool run = true;
         
+        int c;
+        int Size = 0;
+        
+        string str = "end";
+
         byte[] resbytes = new byte[256];
 
-        int Size = 0;
+        
         while (run)
         {
             //送信されたデータを読み取り、バイト配列に格納する
             while (inputrun)
             {
-                //byte[] resbytes = new byte[256];
-                //int Size = 0;
                 //送信されたデータを読み取り、バイト配列に格納する
                 //NetworkStream.Read(格納するByte配列,データを格納を開始する場所，読み取るバイト数)
                 Size = ns.Read(resbytes, 0, resbytes.Length);
@@ -78,36 +80,51 @@ class Program
             }
             //読み取ったbyte型をstring型に変換する
             string resmsg = nc.GetString(resbytes, 0, Size);
-            //string resmsg = nc.GetString(ms.GetBuffer(), 0, (int)ms.Length);
-            //resmsg = string.Empty;
-            
+
             //end入力がされた時の判定
             string aftertrim = resmsg.Trim();
             c = string.Compare(aftertrim, str, true);
             if (c == 0)
             {
-                Console.WriteLine("{0}と入力されました。\t終了します。", resmsg);
-                Console.WriteLine("リターンキーを入力してください。Listenerを閉じます。");
-               run = false;
+                Console.WriteLine("{0}入力されました。", aftertrim);
+                run = false;
             }
             else
             {
-                Console.WriteLine("受信した内容を表示します。");
-                Console.WriteLine(resmsg);
+                Console.WriteLine("[受信した内容を表示します]");
+                Console.WriteLine(aftertrim);
                 inputrun = true;
+            }
 
+            //Server側からメッセージを送信
+            if (c != 0)
+            {
+                Console.WriteLine("[文字を入力し、Enterキーで送信してください]");
+                string sendMsg = Console.ReadLine();
+                c = string.Compare(sendMsg.Trim(), str, true);
+                if (sendMsg == null || sendMsg.Length == 0 || c == 0)
+                {
+                    run = false;
+
+                }
+                //string型からbyte配列型に変更する(エンコードの指定も必要になるためUTF8に指定)
+                //string型からbyte配列型に変更する時にGetBytesを使用する
+                //文字列(string型)はUnicodeでは送信することができないのでbyte型として変更する
+                System.Text.Encoding mc = System.Text.Encoding.UTF8;
+                byte[] sendbytes = mc.GetBytes(sendMsg + '\n');
+
+                //データを送信
+                ns.Write(sendbytes, 0, sendbytes.Length);
+                //Console.WriteLine(sendMsg);
             }
         }
+        ns.Close();
         ms.Close();
-
         Server.Stop();
-        Console.WriteLine("Listenerを閉じました。");
-        
         //リターンキー入力後、意図的に終了させる
-        
+        Console.WriteLine("Listenerを閉じます。リターンキーを入力してください。");
         Console.ReadLine();
-        Client.Close();
-
+        Console.WriteLine("Listenerを閉じました。");
     }
 }
 

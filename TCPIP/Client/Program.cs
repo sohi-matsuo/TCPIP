@@ -34,12 +34,22 @@ class Program
 
         //サーバーに送るデータを入力
         //何も入力されていない時・リターンキーのみ・end入力された時はループを抜ける
-        int c;
+
+        bool inputrun = true;
         bool run = true;
+
+        int c;
+        int Size = 0;
+
         string str = "end";
+
+        byte[] resbytes = new byte[256];
+
+        System.IO.MemoryStream ms = new System.IO.MemoryStream();
+
         while (run)
         {
-            Console.WriteLine("文字を入力し、Enterキーで送信してください。");
+            Console.WriteLine("[文字を入力し、Enterキーで送信してください]");
             string sendMsg = Console.ReadLine();
             c = string.Compare(sendMsg.Trim(), str, true);
             if (sendMsg == null || sendMsg.Length == 0 || c == 0)
@@ -55,10 +65,50 @@ class Program
             //データを送信
             ns.Write(sendbytes, 0, sendbytes.Length);
             //Console.WriteLine(sendMsg);
+
+            //Client側のデータ受信
+            if (c != 0)
+            {
+                while (inputrun)
+                {
+                    //送信されたデータを読み取り、バイト配列に格納する
+                    //NetworkStream.Read(格納するByte配列,データを格納を開始する場所，読み取るバイト数)
+                    Size = ns.Read(resbytes, 0, resbytes.Length);
+
+                    //読み取るデータが無くなった時・改行のみ入力された時・改行が来た時
+                    //データを読み取る処理を終了する
+
+                    if (Size == 0 || resbytes[Size - 1] == '\n')
+                    {
+                        inputrun = false;
+                    }
+
+                    //読み取ったデータをresbytes(byte型)に格納する
+                    ms.Write(resbytes, 0, Size);
+                }
+                //読み取ったbyte型をstring型に変換する
+                string resmsg = nc.GetString(resbytes, 0, Size);
+
+                //end入力がされた時の判定
+                string aftertrim = resmsg.Trim();
+                c = string.Compare(aftertrim, str, true);
+                if (c == 0)
+                {
+                    Console.WriteLine("{0}と入力されました。", aftertrim);
+                    run = false;
+                }
+                else
+                {
+                    Console.WriteLine("[受信した内容を表示します]");
+                    Console.WriteLine(aftertrim);
+                    inputrun = true;
+                }
+            }
         }
 
-
-        //Console.ReadLine();
+        Console.WriteLine("Clientを閉じます。リターンキーを入力してください。");
+        Console.ReadLine();
+        Console.WriteLine("Clientを閉じました。");
         TCP.Close();
     }
 }
