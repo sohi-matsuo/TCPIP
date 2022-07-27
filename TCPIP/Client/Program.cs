@@ -4,76 +4,6 @@ using System.Text;
 
 class Program
 {
-
-    public static StringBuilder AppendString(StringBuilder outputstring, out int status, ConsoleKeyInfo keyinfo, out Char ch)
-    {
-        ch = Char.MinValue;
-        status = -1;
-        switch (keyinfo.Key)
-        {
-            case ConsoleKey.Escape:
-                // ESCキーが押された場合は、入力がキャンセルされたものとしてnullを返す
-                status = 0;
-                return null;
-
-            case ConsoleKey.Enter:
-                // Enterキーが押された場合は、入力が確定されたものとしてバッファに格納した文字列を返す
-                status = 0;
-                return outputstring;
-
-            case ConsoleKey.Backspace:
-                // BackSpaceキーが押された場合は、バッファから最後の一文字を削除する
-                if (0 < outputstring.Length)
-                {
-                    outputstring.Length -= 1;
-                    ch = (Char)8;
-                }
-                else
-                {
-                    // 削除できる文字がない場合は、ビープ音を鳴らす
-                    Console.Beep();
-                }
-                break;
-            default:
-                ch = keyinfo.KeyChar;
-                if (Char.IsLetter(keyinfo.KeyChar))
-                {
-                    // 入力された文字がアルファベットなどの文字の場合
-                    if ((keyinfo.Modifiers & ConsoleModifiers.Shift) == 0)
-                    {
-                        // Shiftキーが押されていない場合は、入力された文字をそのままバッファに追加する
-                        outputstring.Append(ch);
-                    }
-                    else
-                    {
-                        // Shiftキーが押されている場合は、CapsLockキーの状態に応じて大文字または小文字にする
-                        if (Console.CapsLock)
-                        {
-                            ch = Char.ToLower(ch);
-                            outputstring.Append(ch);
-                        }
-                        else
-                        {
-                            ch = Char.ToUpper(ch);
-                            outputstring.Append(ch);
-                        }
-                    }
-                }
-                else if (!Char.IsControl(keyinfo.KeyChar))
-                {
-                    // 入力された文字が制御文字以外(数字や記号)の場合は、そのままバッファに追加する
-                    outputstring.Append(ch);
-                }
-                else
-                {
-                    ch = Char.MinValue;
-                    // コントロールキーやファンクションキーが入力された場合は、ビープ音を鳴らす
-                    Console.Beep();
-                }
-                break;
-        }
-        return outputstring;
-    }
     public static void Main(string[] args)
     {
 
@@ -87,7 +17,12 @@ class Program
         {
             ipOrHost = args[0];
         }
+        
+        Client(ipOrHost);
 
+    }
+    public static void Client(string ipOrHost)
+    {
         //サーバーのIPアドレスとポート番号を設定
 
         int port = 2000;
@@ -246,7 +181,77 @@ class Program
         Console.WriteLine("Clientを閉じました。");
         TCP.Close();
     }
+    public static StringBuilder AppendString(StringBuilder outputstring, out int status, ConsoleKeyInfo keyinfo, out Char ch)
+    {
+        ch = Char.MinValue;
+        status = -1;
+        switch (keyinfo.Key)
+        {
+            case ConsoleKey.Escape:
+                // ESCキーが押された場合は、入力がキャンセルされたものとしてnullを返す
+                status = 0;
+                return null;
+
+            case ConsoleKey.Enter:
+                // Enterキーが押された場合は、入力が確定されたものとしてバッファに格納した文字列を返す
+                status = 0;
+                return outputstring;
+
+            case ConsoleKey.Backspace:
+                // BackSpaceキーが押された場合は、バッファから最後の一文字を削除する
+                if (0 < outputstring.Length)
+                {
+                    outputstring.Length -= 1;
+                    ch = (Char)8;
+                }
+                else
+                {
+                    // 削除できる文字がない場合は、ビープ音を鳴らす
+                    Console.Beep();
+                }
+                break;
+            default:
+                ch = keyinfo.KeyChar;
+                if (Char.IsLetter(keyinfo.KeyChar))
+                {
+                    // 入力された文字がアルファベットなどの文字の場合
+                    if ((keyinfo.Modifiers & ConsoleModifiers.Shift) == 0)
+                    {
+                        // Shiftキーが押されていない場合は、入力された文字をそのままバッファに追加する
+                        outputstring.Append(ch);
+                    }
+                    else
+                    {
+                        // Shiftキーが押されている場合は、CapsLockキーの状態に応じて大文字または小文字にする
+                        if (Console.CapsLock)
+                        {
+                            ch = Char.ToLower(ch);
+                            outputstring.Append(ch);
+                        }
+                        else
+                        {
+                            ch = Char.ToUpper(ch);
+                            outputstring.Append(ch);
+                        }
+                    }
+                }
+                else if (!Char.IsControl(keyinfo.KeyChar))
+                {
+                    // 入力された文字が制御文字以外(数字や記号)の場合は、そのままバッファに追加する
+                    outputstring.Append(ch);
+                }
+                else
+                {
+                    ch = Char.MinValue;
+                    // コントロールキーやファンクションキーが入力された場合は、ビープ音を鳴らす
+                    Console.Beep();
+                }
+                break;
+        }
+        return outputstring;
+    }
 }
+
 
 
 
